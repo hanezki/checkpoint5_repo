@@ -15,10 +15,17 @@ provider "google" {
   zone    = var.zone
 }
 
+resource "google_compute_subnetwork" "terraform-checkpoint5-subnet" {
+  name          = "hannu-checkpoint5-subnet"
+  ip_cidr_range = "10.0.1.0/24"
+  region        = "us-central1"
+  network       = google_compute_network.terraform-checkpoint5-vpc.id
+}
+
 resource "google_compute_network" "terraform-checkpoint5-vpc" {
   project                 = var.project
   name                    = "hannu-checkpoint5-vpc"
-  auto_create_subnetworks = true
+  auto_create_subnetworks = false
 }
 
 resource "google_compute_firewall" "terraform-checkpoint5-firewall" {
@@ -27,13 +34,9 @@ resource "google_compute_firewall" "terraform-checkpoint5-firewall" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80"]
+    ports    = ["80", "22"]
   }
 
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-rule", "ssh-rule"]
@@ -55,7 +58,9 @@ resource "google_compute_instance" "terraform-checkpoint5-vm-instance" {
 
   network_interface {
     network = google_compute_network.terraform-checkpoint5-vpc.name
+    subnetwork = google_compute_subnetwork.terraform-checkpoint5-subnet.name
     access_config {
+
 
     }
 
